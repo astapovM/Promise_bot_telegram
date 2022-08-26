@@ -79,7 +79,7 @@ async def answer_date(call: types.CallbackQuery,callback_data: dict, state: FSMC
             if db_admin.check_user(call.from_user.id) != None:
                 text = random.choice(remember_list.spisok)
                 await bot.send_message(call.from_user.id, text)
-                print(f"Сообщение юзеру {call.from_user.id} доставлено")
+                print(f"Сообщение юзеру {call.from_user.id} доставлено!")
 
             else:
                 break
