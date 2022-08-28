@@ -1,11 +1,14 @@
-import random
 import asyncio
+import datetime
+import random
+
 from aiogram import Bot, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import Dispatcher, FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.utils import executor
-from aiogram_calendar import simple_cal_callback, SimpleCalendar, dialog_cal_callback, DialogCalendar
+from aiogram_calendar import simple_cal_callback, SimpleCalendar
+
 import buttons
 import db_admin
 import remember_list
@@ -15,6 +18,8 @@ bot = Bot(token=token)
 dp = Dispatcher(bot, storage=MemoryStorage())
 db_admin.sql_start()
 
+now = datetime.datetime.now()
+
 
 class Promises(StatesGroup):
     promis_text = State()
@@ -23,7 +28,6 @@ class Promises(StatesGroup):
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
-    db_admin.check_user(message.from_user.id)
     if db_admin.check_user(message.from_user.id) != None:
         await message.answer("Опять ты ? \n"
                              "Нажми кнопку, чтобы узнать что ты обещал:  ", reply_markup=buttons.check_promise_button)
@@ -41,13 +45,8 @@ async def help_command(message: types.Message):
 
 @dp.message_handler(text='Дать обещание')
 async def promise(message: types.Message):
-
     await Promises.promis_text.set()
     await message.answer("Хорошо.Напиши что ты хочешь пообещать", reply_markup=types.ReplyKeyboardRemove())
-
-
-
-
 
 
 @dp.message_handler(state=Promises.promis_text)
@@ -60,10 +59,11 @@ async def answer_text(message: types.Message, state: FSMContext):
         data["promise"] = message.text
 
     await state.reset_state(with_data=False)
-    await message.answer("Хорошо.Теперь введи дату дедлайна",reply_markup=await SimpleCalendar().start_calendar())
+    await message.answer("Хорошо.Теперь введи дату дедлайна", reply_markup=await SimpleCalendar().start_calendar())
+
 
 @dp.callback_query_handler(simple_cal_callback.filter())
-async def answer_date(call: types.CallbackQuery,callback_data: dict, state: FSMContext):
+async def answer_date(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
     selected, date = await SimpleCalendar().process_selection(call, callback_data)
     if selected:
         await Promises.promis_date.set()
@@ -71,28 +71,25 @@ async def answer_date(call: types.CallbackQuery,callback_data: dict, state: FSMC
         data = await state.get_data()
         await db_admin.sql_add(data)
         await state.finish()
-        await bot.send_message(call.from_user.id, f'Ты пообещал {data["promise"]} до {data["deadline"]}')
-        await bot.send_message(call.from_user.id, "Буду переодически тебе напоминать об этом")
+        if db_admin.sql_deadline(call.from_user.id)[0] < now.strftime("%d.%m.%Y"):
+            await bot.send_message(call.from_user.id, "Вы выбрали уже прошедшее время.Обещание не было создано")
+            db_admin.sql_delete(call.from_user.id)
+        else:
+            await bot.send_message(call.from_user.id, f'Ты пообещал {data["promise"]} до {data["deadline"]}')
+            await bot.send_message(call.from_user.id, "Буду переодически тебе напоминать об этом")
         while True:
-            await asyncio.sleep(random.randint(120, 240))
-            db_admin.check_user(message.from_user.id)
-            if db_admin.check_user(call.from_user.id) != None:
+            await asyncio.sleep(random.randint(121, 241))
+            db_admin.check_user(call.from_user.id)
+            db_admin.sql_deadline(call.from_user.id)
+
+            if db_admin.check_user(call.from_user.id) != None and db_admin.sql_deadline(call.from_user.id)[0] > now.strftime("%d.%m.%Y"):
                 text = random.choice(remember_list.spisok)
                 await bot.send_message(call.from_user.id, text)
                 print(f"Сообщение юзеру {call.from_user.id} доставлено!")
 
             else:
+                await bot.send_message(call.from_user.id, "Создайте новое обещание командой /start")
                 break
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -137,7 +134,18 @@ async def sendall(message: types.Message):
                 for user in users:
                     await bot.send_message(user[0], text)
                     print(f"Сообщение юзеру {user} доставлено")
-                await asyncio.sleep(random.randint(120,240))
+                await asyncio.sleep(random.randint(120, 240))
+
+
+@dp.message_handler(commands=['sendone'])
+async def sendone(message: types.Message):
+    if message.from_user.id == 293427068:
+        text = ("Напоминаю, что ты обещал Помочь лучшему ученику с работой до 01.09.2022.Иначе ебасосина под угрозой отлёта)))")
+        user_volos = 161611465
+        user_admin = 293427068
+        user_star = 87241346
+        await bot.send_message(, text)
+        print(f"Сообщение юзеру {} доставлено")
 
 
 if __name__ == '__main__':
