@@ -165,9 +165,10 @@ async def spam(message):
             await bot.send_message(deadline[0],
                                    "Время вышло и ты не выполнил обещание.Отныне ты официально чорт.Поздравляем  🥳 🥳  🥳  ")
             for mail in db_admin.check_email():
-                if mail[0] != None:
+                if mail[0] is not None:
                     await send_email(f"{mail[0]}")
                 db_admin.sql_delete(deadline[0])
+
 
         else:
             text = random.choice(remember_list.spisok)
