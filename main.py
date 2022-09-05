@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import logging
 import random
-import re
 
 import aioschedule
 from aiogram import Bot, types
@@ -18,11 +17,9 @@ import remember_list
 from config import token
 from mail_sendler import send_email
 
-email = "me@host.com"
+now = datetime.datetime.now()
 
-pattern = r"^[-\w\.]+@([-\w]+\.)+[-\w]{2,4}$"
-
-logging.basicConfig(filename='log.txt', filemode='w',
+logging.basicConfig(filename=f'{now.strftime("%d-%m-%Y")}.txt', filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S', encoding='UTF-8', level=logging.DEBUG)
 logging.info("Log started")
@@ -30,8 +27,6 @@ logging.info("Log started")
 bot = Bot(token=token)
 dp = Dispatcher(bot, storage=MemoryStorage())
 db_admin.sql_start()
-
-now = datetime.datetime.now()
 
 
 class Promises(StatesGroup):
@@ -117,12 +112,10 @@ async def answer_email(message: types.Message, state: FSMContext):
         else:
             await db_admin.sql_add_email(data, message.from_user.id)
             await state.finish()
-            await message.delete()
             await message.answer(
                 f"Почта записана.Если ты не выполнишь своё обещание до {db_admin.promise_check(message.from_user.id)[1]} человеку придет письмо"
                 f" с рассказом о том, как ты его обманул и не выполнил обещанного.")
             await message.answer("Просто введи /start ,  для дальнейшего общения со мной")
-
 
 
 @dp.message_handler(text="Проверить обещание")
@@ -171,12 +164,10 @@ async def spam(message):
         if deadline[1] <= now.strftime("%Y.%m.%d"):
             await bot.send_message(deadline[0],
                                    "Время вышло и ты не выполнил обещание.Отныне ты официально чорт.Поздравляем  🥳 🥳  🥳  ")
-
             for mail in db_admin.check_email():
                 if mail[0] != None:
-                    print(mail[0])
                     await send_email(f"{mail[0]}")
-                    db_admin.sql_delete(deadline[0])
+                db_admin.sql_delete(deadline[0])
 
         else:
             text = random.choice(remember_list.spisok)
@@ -185,7 +176,7 @@ async def spam(message):
 
 
 async def scheduler():
-    aioschedule.every().day.at("12:35").do(spam, "message")
+    aioschedule.every().day.at("13:00").do(spam, "message")
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(10)
@@ -195,23 +186,16 @@ async def on_startup(_):
     asyncio.create_task(scheduler())
 
 
-@dp.message_handler(commands=['sendone'])
-async def sendone(message: types.Message):
-    if message.from_user.id == 293427068:
-        text = ("Ну шо ты , маладой шершень.Не забыл еще что обещал?")
-        user_volos = 161611465
-        user_admin = 293427068
-        user_star = 87241346
-        user_vovan = 881052206
-        user_vlad = 343308620
-        await bot.send_photo(user_star, "https://memepedia.ru/wp-content/uploads/2017/07/1429875891_1642837939.png")
-        print(f"Сообщение юзеру {user_star} доставлено в {now.strftime('%H:%M  %d.%m.%Y')}!")
-
 
 @dp.message_handler()
 async def command_not_found(message: types.Message):
     await message.delete()
     await message.answer(f"Команда {message.message_id} не найдена")
+
+@dp.message_handler(content_types='sticker')
+async def message_with_sticker(message: types.Message):
+    await message.answer('Стикер ? \n'
+                         'Всё ясно.Пользователю 10 лет')
 
 
 if __name__ == '__main__':
