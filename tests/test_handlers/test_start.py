@@ -2,12 +2,19 @@ import pytest
 from unittest.mock import AsyncMock
 
 import buttons
-from main import process_start_command
+from main import help_command, promise
 
 
 @pytest.mark.asyncio
-async def test_start_handler():
+async def test_help_command():
     message = AsyncMock()
-    await process_start_command(message)
+    await help_command(message)
 
-    message.answer.assert_called_with(reply_markup=buttons.check_promise_button)
+    message.answer.assert_called_with("Оставь обещание и я буду о нем напоминать . Используй клавиатуру для выбора")
+
+@pytest.mark.asyncio
+async def test_promise():
+    message = AsyncMock()
+    await promise(message)
+
+    message.answer.assert_called_with("Хорошо.Напиши что ты хочешь пообещать", reply_markup=types.ReplyKeyboardRemove())
