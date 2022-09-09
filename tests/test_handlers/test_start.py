@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import AsyncMock
 
 import buttons
-from main import help_command, promise
+from main import help_command, promise, Promises
 
 
 @pytest.mark.asyncio
@@ -15,6 +15,6 @@ async def test_help_command():
 @pytest.mark.asyncio
 async def test_promise():
     message = AsyncMock()
-    await promise(message)
-
-    message.answer.assert_called_with("Хорошо.Напиши что ты хочешь пообещать", reply_markup=types.ReplyKeyboardRemove())
+    fsm = AsyncMock('123')
+    await Promises.promis_text.set(fsm)
+    message.answer.assert_called_with(message)
