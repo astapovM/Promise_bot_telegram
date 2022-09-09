@@ -23,7 +23,7 @@ path = r"C:\Users\Господин Ведущий\PycharmProjects\new_reminder\P
 logging.basicConfig(filename=os.path.join(path, f'{now.strftime("%d-%m-%Y")}.txt'), filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S', encoding='UTF-8', level=logging.DEBUG)
-logging.info("Log started")
+logging.info("!!!СТАРТ ЛОГА!!!")
 
 bot = Bot(token=token)
 dp = Dispatcher(bot, storage=MemoryStorage())
@@ -156,7 +156,7 @@ async def sendall(message: types.Message):
             for user in users:
                 await bot.send_message(user[0], text)
                 print(f"Сообщение юзеру {user} доставлено")
-            await asyncio.sleep(random.randint(120, 240))
+
 
 
 @dp.message_handler(commands=['spam'])
