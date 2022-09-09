@@ -3,7 +3,7 @@ import sqlite3
 
 def sql_start():
     global base, cur
-    base = sqlite3.connect(r"C:\Users\Господин Ведущий\PycharmProjects\new_reminder\Promise_bot_telegram\database\users.db")
+    base = sqlite3.connect(r"database\users.db")
     cur = base.cursor()
     cur.execute("CREATE TABLE IF NOT EXISTS users(user_id PRIMARY KEY, user_name TEXT, promise TEXT, deadline date )")
     base.commit()
