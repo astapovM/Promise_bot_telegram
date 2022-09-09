@@ -111,16 +111,16 @@ async def answer_email(message: types.Message, state: FSMContext):
             await db_admin.sql_add_email(data, message.from_user.id)
             await state.finish()
             await message.answer(
-                f"Почта записана.Если ты не выполнишь своё обещание до {db_admin.promise_check(message.from_user.id)[1]} человеку придет письмо"
+                f"Почта записана.Если ты не выполнишь своё обещание до {db_admin.deadline_check(message.from_user.id)[1]} человеку придет письмо"
                 f" с рассказом о том, как ты его обманул и не выполнил обещанного.")
             await message.answer("Просто введи /start ,  для дальнейшего общения со мной")
 
 
 @dp.message_handler(text="Проверить обещание")
 async def check_promise(message: types.Message):
-    db_admin.promise_check(message.from_user.id)
+    db_admin.deadline_check(message.from_user.id)
     await message.answer(
-        f"Ты обещал {db_admin.check_promise(message.from_user.id)[0]} до {db_admin.promise_check(message.from_user.id)[1]}")
+        f"Ты обещал {db_admin.check_promise(message.from_user.id)[0]} до {db_admin.deadline_check(message.from_user.id)[1]}")
     await message.answer("Ты выполнил это обещание?", reply_markup=buttons.promise_answer_button)
 
 
@@ -147,12 +147,11 @@ async def answer_no(message: types.Message):
 @dp.message_handler(commands=['sendall'])
 async def sendall(message: types.Message):
     if message.from_user.id == 293427068:
-        while True:
-            text = random.choice(remember_list.spisok)
-            users = db_admin.all_users()
-            for user in users:
-                await bot.send_message(user[0], text)
-                print(f"Сообщение юзеру {user} доставлено")
+        text = random.choice(remember_list.spisok)
+        users = db_admin.all_users()
+        for user in users:
+            await bot.send_message(user[0], text)
+            print(f"Сообщение юзеру {user[1]} (id = {user[0]}) доставлено")
 
 
 
