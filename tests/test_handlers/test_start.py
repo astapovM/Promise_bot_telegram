@@ -1,16 +1,19 @@
-import pytest
 from unittest.mock import AsyncMock
 
+import pytest
 
-from main import help_command, promise, Promises
+import main
+from main import main
+
+main.main()
 
 
 @pytest.mark.asyncio
 async def test_help_command():
     message = AsyncMock()
-    await help_command(message)
-
+    await main.help_command(message)
     message.answer.assert_called_with("Оставь обещание и я буду о нем напоминать . Используй клавиатуру для выбора")
+
 
 @pytest.mark.asyncio
 async def test_promise():
