@@ -11,11 +11,11 @@ from aiogram.dispatcher import Dispatcher, FSMContext
 from aiogram.utils import executor
 from aiogram_calendar import simple_cal_callback, SimpleCalendar
 
-import buttons
-import db_admin
 import remember_list
+from bot_buttons import buttons
 from classes import Promises
 from config import token
+from database import db_admin
 from mail_sendler import send_email
 
 now = datetime.datetime.now()
@@ -28,9 +28,6 @@ logging.info("!!СТАРТ ЛОГА!!!")
 bot = Bot(token=token)
 dp = Dispatcher(bot, storage=MemoryStorage())
 db_admin.sql_start()
-
-
-
 
 
 @dp.message_handler(commands=['start'])
@@ -152,7 +149,6 @@ async def sendall(message: types.Message):
         for user in users:
             await bot.send_message(user[0], text)
             print(f"Сообщение юзеру {user[1]} (id = {user[0]}) доставлено")
-
 
 
 @dp.message_handler(commands=['spam'])

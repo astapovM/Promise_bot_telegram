@@ -3,13 +3,13 @@ import sqlite3
 
 def sql_start():
     global base, cur
-    base = sqlite3.connect("users.db")
+    base = sqlite3.connect(r"C:\Users\Господин Ведущий\PycharmProjects\new_reminder\Promise_bot_telegram\database\users.db")
     cur = base.cursor()
     cur.execute("CREATE TABLE IF NOT EXISTS users(user_id PRIMARY KEY, user_name TEXT, promise TEXT, deadline date )")
     base.commit()
 
 
-def promise_check(user_id):
+def deadline_check(user_id):
     cur.execute(f"SELECT user_id, deadline FROM users ")
     results = cur.fetchall()
     for i in results:
@@ -48,7 +48,7 @@ async def sql_add_email(data, user_id):
 
 
 def all_users():
-    cur.execute("SELECT user_id from users ")
+    cur.execute("SELECT user_id, user_name from users ")
     return cur.fetchall()
 
 
