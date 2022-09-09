@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import logging
+import os
 import random
 
 import aioschedule
@@ -18,8 +19,8 @@ from config import token
 from mail_sendler import send_email
 
 now = datetime.datetime.now()
-
-logging.basicConfig(filename=f'{now.strftime("%d-%m-%Y")}.txt', filemode='a',
+path = r"C:\Users\Господин Ведущий\PycharmProjects\new_reminder\Promise_bot_telegram\logs"
+logging.basicConfig(filename=os.path.join(path, f'{now.strftime("%d-%m-%Y")}.txt'), filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S', encoding='UTF-8', level=logging.DEBUG)
 logging.info("Log started")
@@ -176,6 +177,18 @@ async def spam(message):
             print(f"Сообщение юзеру {deadline[0]} доставлено в {now.strftime('%H:%M  %d.%m.%Y')}!")
 
 
+@dp.message_handler()
+async def command_not_found(message: types.Message):
+    await message.delete()
+    await message.answer(f"Команда {message.message_id} не найдена")
+
+
+@dp.message_handler(content_types='sticker')
+async def message_with_sticker(message: types.Message):
+    await message.answer('Стикер ? \n'
+                         'Всё ясно.Пользователю 10 лет')
+
+
 async def scheduler():
     aioschedule.every().day.at("13:00").do(spam, "message")
     while True:
@@ -185,18 +198,6 @@ async def scheduler():
 
 async def on_startup(_):
     asyncio.create_task(scheduler())
-
-
-
-@dp.message_handler()
-async def command_not_found(message: types.Message):
-    await message.delete()
-    await message.answer(f"Команда {message.message_id} не найдена")
-
-@dp.message_handler(content_types='sticker')
-async def message_with_sticker(message: types.Message):
-    await message.answer('Стикер ? \n'
-                         'Всё ясно.Пользователю 10 лет')
 
 
 if __name__ == '__main__':
