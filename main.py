@@ -8,13 +8,13 @@ import aioschedule
 from aiogram import Bot, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import Dispatcher, FSMContext
-from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.utils import executor
 from aiogram_calendar import simple_cal_callback, SimpleCalendar
 
 import buttons
 import db_admin
 import remember_list
+from classes import Promises
 from config import token
 from mail_sendler import send_email
 
@@ -23,17 +23,14 @@ path = r"C:\Users\Господин Ведущий\PycharmProjects\new_reminder\P
 logging.basicConfig(filename=os.path.join(path, f'{now.strftime("%d-%m-%Y")}.txt'), filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S', encoding='UTF-8', level=logging.DEBUG)
-logging.info("!!!СТАРТ ЛОГА!!!")
+logging.info("!!СТАРТ ЛОГА!!!")
 
 bot = Bot(token=token)
 dp = Dispatcher(bot, storage=MemoryStorage())
 db_admin.sql_start()
 
 
-class Promises(StatesGroup):
-    promis_text = State()
-    promis_date = State()
-    promis_email = State()
+
 
 
 @dp.message_handler(commands=['start'])
